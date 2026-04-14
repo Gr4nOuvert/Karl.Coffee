@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.vite/
+.DS_Store
+.env
+.env.*
+*.log
+/vite-env.d.ts
+.vscode/
+server
