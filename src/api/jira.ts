@@ -1,18 +1,13 @@
-import type { JiraIssueType, Lead } from "../types";
-import { getIssueTypesFromMock, getLeadsFromMock, updateLeadInMock } from "../data/mockData";
+import type { Lead } from "../types";
+import { getLeadsFromMock, updateLeadInMock } from "../data/mockData";
 
 function delay(ms = 250) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function getIssueTypes(): Promise<JiraIssueType[]> {
+export async function getLeads(): Promise<Lead[]> {
   await delay();
-  return getIssueTypesFromMock();
-}
-
-export async function getLeads(issueType: string): Promise<Lead[]> {
-  await delay();
-  return getLeadsFromMock(issueType);
+  return getLeadsFromMock();
 }
 
 export async function saveLead(lead: Lead): Promise<Lead> {

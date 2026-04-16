@@ -2,67 +2,72 @@ import { useMemo, useState } from "react";
 import LeadDetail from "../components/LeadDetail";
 import LeadList from "../components/LeadList";
 import { Lead, LeadStatus } from "../types";
-import { JiraIssueType } from "../types";
 
 const statusFilters: Array<LeadStatus | "Alle"> = [
   "Alle",
   "Neu",
-  "Qualifiziert",
-  "Angebot in Vorbereitung",
-  "Warten auf Feedback",
+  "In Bearbeitung",
+  "Angebot erzeugt",
+  "Angebot versendet",
+  "Angebot angenommen",
+  "Geschlossen",
 ];
 
 type LeadsPageProps = {
   leads: Lead[];
-  issueTypes: JiraIssueType[];
-  selectedIssueType: string;
-  onChangeIssueType: (issueType: string) => void;
   onUpdateLead: (lead: Lead) => void;
 };
 
 function LeadsPage({
   leads,
-  issueTypes,
-  selectedIssueType,
-  onChangeIssueType,
   onUpdateLead,
 }: LeadsPageProps) {
   const [selectedLeadId, setSelectedLeadId] = useState(leads[0]?.id ?? "");
   const [activeFilter, setActiveFilter] = useState<LeadStatus | "Alle">("Alle");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredLeads = useMemo(() => {
-    if (activeFilter === "Alle") {
-      return leads;
-    }
-    return leads.filter((lead) => lead.status === activeFilter);
-  }, [activeFilter, leads]);
+    const normalizedQuery = searchQuery.trim().toLocaleLowerCase("de-DE");
+
+    return leads.filter((lead) => {
+      const matchesStatus =
+        activeFilter === "Alle" || lead.status === activeFilter;
+
+      if (!matchesStatus) {
+        return false;
+      }
+
+      if (!normalizedQuery) {
+        return true;
+      }
+
+      const searchableText =
+        `${lead.company} ${lead.contactName}`.toLocaleLowerCase("de-DE");
+
+      return searchableText.includes(normalizedQuery);
+    });
+  }, [activeFilter, leads, searchQuery]);
 
   const selectedLead =
     filteredLeads.find((lead) => lead.id === selectedLeadId) ??
     filteredLeads[0];
 
+  const selectedLeadStatus = selectedLead?.status;
+
+  const handleLeadChange = (updatedLead: Lead) => {
+    onUpdateLead(updatedLead);
+    setSelectedLeadId(updatedLead.id);
+    setActiveFilter(updatedLead.status);
+  };
+
   return (
-    <div className="page-stack">
+    <div className="page-stack leads-page">
       <section className="panel filter-panel">
         <div className="section-heading">
           <div>
             <span className="eyebrow">Lead Board</span>
             <h1>Leads zentral verwalten</h1>
           </div>
-
-          <label className="form-field">
-            <span>Work Item Type</span>
-            <select
-              value={selectedIssueType}
-              onChange={(event) => onChangeIssueType(event.target.value)}
-            >
-              {issueTypes.map((type) => (
-                <option key={type.id} value={type.name}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
 
         <div className="filter-row">
@@ -70,11 +75,15 @@ function LeadsPage({
             <button
               key={filter}
               type="button"
-              className={
-                activeFilter === filter
-                  ? "filter-chip filter-chip-active"
-                  : "filter-chip"
-              }
+              className={[
+                "filter-chip",
+                activeFilter === filter ? "filter-chip-active" : "",
+                filter !== "Alle" && selectedLeadStatus === filter
+                  ? "filter-chip-current-status"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
               onClick={() => {
                 setActiveFilter(filter);
                 const nextLead =
@@ -96,14 +105,12 @@ function LeadsPage({
         <LeadList
           leads={filteredLeads}
           activeLeadId={selectedLead?.id ?? ""}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
           onSelectLead={setSelectedLeadId}
         />
         {selectedLead ? (
-          <LeadDetail
-            lead={selectedLead}
-            onLeadChange={onUpdateLead}
-            onSaveLead={onUpdateLead}
-          />
+          <LeadDetail lead={selectedLead} onLeadChange={handleLeadChange} />
         ) : (
           <article className="panel empty-state">
             <span className="eyebrow">Keine Treffer</span>

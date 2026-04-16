@@ -1,10 +1,10 @@
 export type LeadStatus =
   | "Neu"
-  | "Qualifiziert"
-  | "Angebot in Vorbereitung"
-  | "Warten auf Feedback";
-
-export type Priority = "Hoch" | "Mittel" | "Niedrig";
+  | "In Bearbeitung"
+  | "Angebot erzeugt"
+  | "Angebot versendet"
+  | "Angebot angenommen"
+  | "Geschlossen";
 
 export type LeadActivity = {
   id: string;
@@ -13,10 +13,19 @@ export type LeadActivity = {
   type: "call" | "mail" | "note";
 };
 
+export type OfferArticleMode = "Miete" | "Kauf";
+
+export type OfferArticle = {
+  id: string;
+  machine: string;
+  price: number;
+  mode: OfferArticleMode;
+  extraFeatures: string[];
+};
+
 export type Lead = {
   id: string;
   status: LeadStatus;
-  priority: Priority;
   createdAt: string;
   owner: string;
   company: string;
@@ -36,9 +45,5 @@ export type Lead = {
   estimatedValue: number;
   monthlyVolume: string;
   activity: LeadActivity[];
-};
-
-export type JiraIssueType = {
-  id: string;
-  name: string;
+  articles?: OfferArticle[];
 };

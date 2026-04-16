@@ -18,13 +18,15 @@ function OverviewPage({
     (sum, lead) => sum + lead.estimatedValue,
     0,
   );
-  const highPriorityCount = leads.filter(
-    (lead) => lead.priority === "Hoch",
+  const inProgressCount = leads.filter(
+    (lead) => lead.status === "In Bearbeitung",
   ).length;
-  const preparingQuotes = leads.filter(
-    (lead) => lead.status === "Angebot in Vorbereitung",
+  const createdQuotesCount = leads.filter(
+    (lead) => lead.status === "Angebot erzeugt",
   ).length;
-  const urgentLeads = leads.filter((lead) => lead.priority === "Hoch");
+  const sentQuotesCount = leads.filter(
+    (lead) => lead.status === "Angebot versendet",
+  ).length;
   const displayLeads = leads.slice(0, 6);
   const nextActions = leads.slice(0, 5);
 
@@ -36,7 +38,7 @@ function OverviewPage({
           <h1>Leads & Angebote in einer zentralen Ansicht</h1>
           <p>
             Hier sehen deine Vertriebsmitarbeiter den aktuellen Stand aller
-            Leads, den Status von Angeboten und die wichtigsten nächsten
+            Lead, den Status von Angeboten und die wichtigsten nächsten
             Schritte.
           </p>
           {error ? <p className="panel-copy">Fehler: {error}</p> : null}
@@ -48,7 +50,7 @@ function OverviewPage({
           <small>
             {isLoading
               ? "Lade Daten aus Jira..."
-              : "Live-Daten aus dem Backend"}
+              : "Live-Daten aller offenen Angebote"}
           </small>
         </div>
       </section>
@@ -61,16 +63,16 @@ function OverviewPage({
           delta="immer aktuell"
         />
         <DashboardCard
-          eyebrow="Fokus"
-          value={String(highPriorityCount)}
-          label="hohe Priorität"
-          delta="sofort prüfen"
+          eyebrow="Bearbeitung"
+          value={String(inProgressCount)}
+          label="aktive Leads"
+          delta="direkt weiterarbeiten"
         />
         <DashboardCard
           eyebrow="Angebote"
-          value={String(preparingQuotes)}
-          label="in Vorbereitung"
-          delta="bereit zur Berechnung"
+          value={String(createdQuotesCount)}
+          label="erzeugt"
+          delta="bereit zum Versand"
         />
       </section>
 
@@ -98,13 +100,9 @@ function OverviewPage({
 
           <div className="lead-grid">
             {displayLeads.map((lead) => (
-              <article
-                key={lead.id}
-                className={`lead-card ${lead.priority === "Hoch" ? "lead-card-highlight" : ""}`}
-              >
+              <article key={lead.id} className="lead-card">
                 <div className="lead-card-head">
                   <span className="eyebrow">{lead.status}</span>
-                  <span className="status-pill">{lead.priority}</span>
                 </div>
 
                 <strong>{lead.company}</strong>
@@ -129,16 +127,16 @@ function OverviewPage({
 
           <div className="mini-stat-grid">
             <div className="mini-stat-card">
-              <span className="eyebrow">High-Priority</span>
-              <strong>{urgentLeads.length}</strong>
+              <span className="eyebrow">In Bearbeitung</span>
+              <strong>{inProgressCount}</strong>
             </div>
             <div className="mini-stat-card">
-              <span className="eyebrow">In Vorbereitung</span>
-              <strong>{preparingQuotes}</strong>
+              <span className="eyebrow">Angebot erzeugt</span>
+              <strong>{createdQuotesCount}</strong>
             </div>
             <div className="mini-stat-card">
-              <span className="eyebrow">Total Leads</span>
-              <strong>{leads.length}</strong>
+              <span className="eyebrow">Angebot versendet</span>
+              <strong>{sentQuotesCount}</strong>
             </div>
           </div>
 

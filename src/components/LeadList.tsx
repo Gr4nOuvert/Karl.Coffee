@@ -3,32 +3,61 @@ import { Lead } from "../types";
 type LeadListProps = {
   leads: Lead[];
   activeLeadId: string;
+  searchQuery: string;
+  onSearchQueryChange: (value: string) => void;
   onSelectLead: (leadId: string) => void;
 };
 
-function LeadList({ leads, activeLeadId, onSelectLead }: LeadListProps) {
+function LeadList({
+  leads,
+  activeLeadId,
+  searchQuery,
+  onSearchQueryChange,
+  onSelectLead,
+}: LeadListProps) {
   return (
-    <article className="panel">
+    <article className="panel lead-list-panel">
       <div className="section-heading">
         <div>
           <span className="eyebrow">Leads</span>
-          <h2>Offene Anfragen</h2>
         </div>
       </div>
 
-      <ul className="lead-list">
-        {leads.map((lead) => (
-          <li
-            key={lead.id}
-            className={`lead-list-item ${lead.id === activeLeadId ? "active" : ""}`}
-            onClick={() => onSelectLead(lead.id)}
-          >
-            <strong>{lead.company}</strong>
-            <span>{lead.contactName}</span>
-            <span>{lead.status}</span>
-          </li>
-        ))}
-      </ul>
+      <label className="form-field lead-search-field">
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(event) => onSearchQueryChange(event.target.value)}
+          placeholder="Firma oder Kontaktperson suchen"
+        />
+      </label>
+
+      <div className="lead-list-scroll">
+        <ul className="lead-list">
+          {leads.map((lead) => (
+            <li
+              key={lead.id}
+              className={`lead-list-item ${lead.id === activeLeadId ? "active" : ""}`}
+              onClick={() => onSelectLead(lead.id)}
+            >
+              <div className="lead-list-item-top">
+                <strong>{lead.company}</strong>
+                <span className="lead-list-value">
+                  {lead.estimatedValue.toLocaleString("de-DE")} EUR
+                </span>
+              </div>
+              <span className="lead-list-contact">{lead.contactName}</span>
+            </li>
+          ))}
+        </ul>
+
+        {leads.length === 0 ? (
+          <div className="lead-list-empty">
+            <span className="eyebrow">Keine Treffer</span>
+            <p>Zu deiner Suche gibt es aktuell keine passenden Leads.</p>
+          </div>
+        ) : null}
+      </div>
     </article>
   );
 }
