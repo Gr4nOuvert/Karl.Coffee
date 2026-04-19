@@ -6,16 +6,16 @@ function StatusPill({ tone }: StatusPillProps) {
   const color =
     tone === "Neu"
       ? "#38bdf8"
-      : tone === "Qualifiziert"
+      : tone === "In Bearbeitung"
         ? "#fbbf24"
-        : tone === "Angebot in Vorbereitung"
+        : tone === "Angebot erzeugt"
           ? "#a78bfa"
-          : tone === "Warten auf Feedback"
+          : tone === "Angebot versendet"
             ? "#f97316"
-            : tone === "Hoch"
-              ? "#f87171"
-              : tone === "Mittel"
-                ? "#60a5fa"
+            : tone === "Angebot angenommen"
+              ? "#22c55e"
+              : tone === "Geschlossen"
+                ? "#94a3b8"
                 : "#94a3b8";
 
   return (
@@ -29,6 +29,7 @@ function StatusPill({ tone }: StatusPillProps) {
         color,
         fontWeight: 600,
         fontSize: "0.9rem",
+        lineHeight: 1.2,
       }}
     >
       {tone}

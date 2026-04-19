@@ -1,10 +1,10 @@
 export type LeadStatus =
   | "Neu"
-  | "Qualifiziert"
-  | "Angebot in Vorbereitung"
-  | "Warten auf Feedback";
-
-export type Priority = "Hoch" | "Mittel" | "Niedrig";
+  | "In Bearbeitung"
+  | "Angebot erzeugt"
+  | "Angebot versendet"
+  | "Angebot angenommen"
+  | "Geschlossen";
 
 export type LeadActivity = {
   id: string;
@@ -13,10 +13,50 @@ export type LeadActivity = {
   type: "call" | "mail" | "note";
 };
 
+export type OfferArticleMode = "Miete" | "Kauf";
+export type OfferArticleType = "Kaffee" | "Wasser";
+export type GeneratedOfferStatus = "Generiert" | "Mail vorbereitet";
+
+export type OfferArticle = {
+  id: string;
+  type: OfferArticleType;
+  machine: string;
+  quantity: number;
+  price: number;
+  mode: OfferArticleMode;
+  extraFeatures: string[];
+  selectedForOffer?: boolean;
+};
+
+export type GeneratedOfferItem = {
+  articleId: string;
+  type: OfferArticleType;
+  machine: string;
+  quantity: number;
+  price: number;
+  mode: OfferArticleMode;
+  extraFeatures: string[];
+};
+
+export type GeneratedOffer = {
+  id: string;
+  createdAt: string;
+  status: GeneratedOfferStatus;
+  items: GeneratedOfferItem[];
+};
+
+export type LeadFieldChange = {
+  isChanged: boolean;
+  isNew: boolean;
+  previousValue: unknown;
+  nextValue: unknown;
+};
+
+export type LeadChangeSet = Partial<Record<keyof Lead, LeadFieldChange>>;
+
 export type Lead = {
   id: string;
   status: LeadStatus;
-  priority: Priority;
   createdAt: string;
   owner: string;
   company: string;
@@ -36,9 +76,7 @@ export type Lead = {
   estimatedValue: number;
   monthlyVolume: string;
   activity: LeadActivity[];
-};
-
-export type JiraIssueType = {
-  id: string;
-  name: string;
+  articles?: OfferArticle[];
+  generatedOffers?: GeneratedOffer[];
+  isNew?: boolean;
 };

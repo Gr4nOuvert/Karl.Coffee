@@ -1,68 +1,188 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import LeadDetail from "../components/LeadDetail";
 import LeadList from "../components/LeadList";
-import { Lead, LeadStatus } from "../types";
-import { JiraIssueType } from "../types";
+import { Lead, LeadChangeSet, LeadStatus } from "../types";
 
 const statusFilters: Array<LeadStatus | "Alle"> = [
   "Alle",
   "Neu",
-  "Qualifiziert",
-  "Angebot in Vorbereitung",
-  "Warten auf Feedback",
+  "In Bearbeitung",
+  "Angebot erzeugt",
+  "Angebot versendet",
+  "Angebot angenommen",
+  "Geschlossen",
 ];
 
 type LeadsPageProps = {
   leads: Lead[];
-  issueTypes: JiraIssueType[];
-  selectedIssueType: string;
-  onChangeIssueType: (issueType: string) => void;
-  onUpdateLead: (lead: Lead) => void;
+  onCreateLead: () => Promise<Lead>;
+  onDiscardLead: (leadId: string) => void;
+  onSaveLead: (lead: Lead, changedFields: LeadChangeSet) => Promise<void>;
 };
+
+function filterLeads(
+  leads: Lead[],
+  activeFilter: LeadStatus | "Alle",
+  searchQuery: string,
+) {
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase("de-DE");
+
+  return leads.filter((lead) => {
+    const matchesStatus =
+      activeFilter === "Alle" || lead.status === activeFilter;
+
+    if (!matchesStatus) {
+      return false;
+    }
+
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    const searchableText =
+      `${lead.company} ${lead.contactName}`.toLocaleLowerCase("de-DE");
+
+    return searchableText.includes(normalizedQuery);
+  });
+}
 
 function LeadsPage({
   leads,
-  issueTypes,
-  selectedIssueType,
-  onChangeIssueType,
-  onUpdateLead,
+  onCreateLead,
+  onDiscardLead,
+  onSaveLead,
 }: LeadsPageProps) {
   const [selectedLeadId, setSelectedLeadId] = useState(leads[0]?.id ?? "");
   const [activeFilter, setActiveFilter] = useState<LeadStatus | "Alle">("Alle");
+  const [searchQuery, setSearchQuery] = useState("");
+  const onDiscardLeadRef = useRef(onDiscardLead);
+  const pendingDiscardLeadIdRef = useRef<string | null>(null);
 
-  const filteredLeads = useMemo(() => {
-    if (activeFilter === "Alle") {
-      return leads;
-    }
-    return leads.filter((lead) => lead.status === activeFilter);
-  }, [activeFilter, leads]);
+  const filteredLeads = useMemo(
+    () => filterLeads(leads, activeFilter, searchQuery),
+    [activeFilter, leads, searchQuery],
+  );
+  const focusedLead =
+    leads.find((lead) => lead.id === selectedLeadId) ?? leads[0];
 
   const selectedLead =
     filteredLeads.find((lead) => lead.id === selectedLeadId) ??
     filteredLeads[0];
 
+  const selectedLeadStatus = selectedLead?.status;
+
+  useEffect(() => {
+    onDiscardLeadRef.current = onDiscardLead;
+  }, [onDiscardLead]);
+
+  useEffect(() => {
+    pendingDiscardLeadIdRef.current = focusedLead?.isNew ? focusedLead.id : null;
+  }, [focusedLead]);
+
+  useEffect(() => {
+    return () => {
+      if (pendingDiscardLeadIdRef.current) {
+        onDiscardLeadRef.current(pendingDiscardLeadIdRef.current);
+      }
+    };
+  }, []);
+
+  const handleLeadSave = async (
+    updatedLead: Lead,
+    changedFields: LeadChangeSet,
+  ) => {
+    setSelectedLeadId(updatedLead.id);
+    setActiveFilter(updatedLead.status);
+    await onSaveLead(updatedLead, changedFields);
+  };
+
+  const getNextVisibleLeadId = (
+    nextFilter: LeadStatus | "Alle",
+    nextSearchQuery: string,
+    leadsToDisplay: Lead[],
+  ) => filterLeads(leadsToDisplay, nextFilter, nextSearchQuery)[0]?.id ?? "";
+
+  const discardFocusedLeadIfNeeded = (
+    nextFilter: LeadStatus | "Alle",
+    nextSearchQuery: string,
+    nextSelectedId: string,
+  ) => {
+    if (!focusedLead?.isNew) {
+      return false;
+    }
+
+    const normalizedQuery = nextSearchQuery.trim().toLocaleLowerCase("de-DE");
+    const searchableText =
+      `${focusedLead.company} ${focusedLead.contactName}`.toLocaleLowerCase("de-DE");
+    const staysVisible =
+      (nextFilter === "Alle" || focusedLead.status === nextFilter) &&
+      (!normalizedQuery || searchableText.includes(normalizedQuery));
+    const keepsFocus = nextSelectedId === focusedLead.id;
+
+    if (staysVisible && keepsFocus) {
+      return false;
+    }
+
+    onDiscardLead(focusedLead.id);
+    return true;
+  };
+
+  const handleSelectLead = (leadId: string) => {
+    const didDiscard = discardFocusedLeadIfNeeded(
+      activeFilter,
+      searchQuery,
+      leadId,
+    );
+
+    if (didDiscard && leadId === focusedLead?.id) {
+      setSelectedLeadId(getNextVisibleLeadId(activeFilter, searchQuery, leads));
+      return;
+    }
+
+    setSelectedLeadId(leadId);
+  };
+
+  const handleFilterChange = (filter: LeadStatus | "Alle") => {
+    const remainingLeads = focusedLead?.isNew
+      ? leads.filter((lead) => lead.id !== focusedLead.id)
+      : leads;
+    const nextLeadId = getNextVisibleLeadId(filter, searchQuery, remainingLeads);
+
+    discardFocusedLeadIfNeeded(filter, searchQuery, nextLeadId);
+    setActiveFilter(filter);
+    setSelectedLeadId(nextLeadId);
+  };
+
+  const handleSearchChange = (value: string) => {
+    const remainingLeads = focusedLead?.isNew
+      ? leads.filter((lead) => lead.id !== focusedLead.id)
+      : leads;
+    const nextLeadId = getNextVisibleLeadId(activeFilter, value, remainingLeads);
+
+    discardFocusedLeadIfNeeded(activeFilter, value, nextLeadId);
+    setSearchQuery(value);
+    setSelectedLeadId(nextLeadId);
+  };
+
+  const handleCreateLead = async () => {
+    if (focusedLead?.isNew) {
+      onDiscardLead(focusedLead.id);
+    }
+
+    const newLead = await onCreateLead();
+    setSearchQuery("");
+    setActiveFilter("Neu");
+    pendingDiscardLeadIdRef.current = newLead.id;
+    setSelectedLeadId(newLead.id);
+  };
+
   return (
-    <div className="page-stack">
+    <div className="page-stack leads-page">
       <section className="panel filter-panel">
         <div className="section-heading">
           <div>
             <span className="eyebrow">Lead Board</span>
-            <h1>Leads zentral verwalten</h1>
           </div>
-
-          <label className="form-field">
-            <span>Work Item Type</span>
-            <select
-              value={selectedIssueType}
-              onChange={(event) => onChangeIssueType(event.target.value)}
-            >
-              {issueTypes.map((type) => (
-                <option key={type.id} value={type.name}>
-                  {type.name}
-                </option>
-              ))}
-            </select>
-          </label>
         </div>
 
         <div className="filter-row">
@@ -70,21 +190,19 @@ function LeadsPage({
             <button
               key={filter}
               type="button"
-              className={
-                activeFilter === filter
-                  ? "filter-chip filter-chip-active"
-                  : "filter-chip"
-              }
-              onClick={() => {
-                setActiveFilter(filter);
-                const nextLead =
-                  filter === "Alle"
-                    ? leads[0]
-                    : leads.find((lead) => lead.status === filter);
-                if (nextLead) {
-                  setSelectedLeadId(nextLead.id);
-                }
-              }}
+              className={[
+                "filter-chip",
+                activeFilter === filter ? "filter-chip-active" : "",
+                ((filter === "Alle" && activeFilter === "Alle") ||
+                  (activeFilter !== "Alle" &&
+                    filter !== "Alle" &&
+                    selectedLeadStatus === filter))
+                  ? "filter-chip-current-status"
+                  : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onClick={() => handleFilterChange(filter)}
             >
               {filter}
             </button>
@@ -96,14 +214,13 @@ function LeadsPage({
         <LeadList
           leads={filteredLeads}
           activeLeadId={selectedLead?.id ?? ""}
-          onSelectLead={setSelectedLeadId}
+          searchQuery={searchQuery}
+          onCreateLead={handleCreateLead}
+          onSearchQueryChange={handleSearchChange}
+          onSelectLead={handleSelectLead}
         />
         {selectedLead ? (
-          <LeadDetail
-            lead={selectedLead}
-            onLeadChange={onUpdateLead}
-            onSaveLead={onUpdateLead}
-          />
+          <LeadDetail lead={selectedLead} onLeadSave={handleLeadSave} />
         ) : (
           <article className="panel empty-state">
             <span className="eyebrow">Keine Treffer</span>

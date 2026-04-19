@@ -1,16 +1,21 @@
-import { useEffect, useMemo, useState } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import {
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import OverviewPage from "./pages/OverviewPage";
 import LeadsPage from "./pages/LeadsPage";
 import LoginPage from "./pages/LoginPage";
-import { getIssueTypes, getLeads, saveLead } from "./api/jira";
-import { Lead, JiraIssueType } from "./types";
+import { getLeads, saveLead } from "./api/jira";
+import { Lead, LeadChangeSet } from "./types";
 
 const initialLead: Lead = {
   id: "LEAD-001",
   status: "Neu",
-  priority: "Mittel",
   createdAt: "2026-04-10",
   owner: "Vertrieb",
   company: "IAV GmbH",
@@ -37,17 +42,71 @@ const initialLead: Lead = {
       type: "mail",
     },
   ],
+  articles: [
+    {
+      id: "article-1",
+      type: "Kaffee",
+      machine: "karl.coffeeBEAN'1plus",
+      quantity: 1,
+      price: 89,
+      mode: "Miete",
+      extraFeatures: ["Wassertank"],
+      selectedForOffer: true,
+    },
+  ],
 };
+
+function getNextLeadId(leads: Lead[]) {
+  const highestLeadNumber = leads.reduce((max, lead) => {
+    const match = lead.id.match(/^LEAD-(\d+)$/);
+    if (!match) {
+      return max;
+    }
+
+    return Math.max(max, Number(match[1]));
+  }, 0);
+
+  return `LEAD-${String(highestLeadNumber + 1).padStart(3, "0")}`;
+}
+
+function createEmptyLead(leads: Lead[]): Lead {
+  const today = new Date().toISOString().slice(0, 10);
+
+  return {
+    id: getNextLeadId(leads),
+    status: "Neu",
+    createdAt: today,
+    owner: "Vertrieb",
+    company: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    street: "",
+    postalCode: "",
+    city: "",
+    locationType: "Unternehmen/BÃ¼ro",
+    offerType: "",
+    portions: "10-29",
+    extraFeatures: "",
+    exactMachine: "",
+    notes: "",
+    nextStep: "",
+    estimatedValue: 0,
+    monthlyVolume: "10-29",
+    activity: [],
+    articles: [],
+    isNew: true,
+  };
+}
 
 function App() {
   const [leads, setLeads] = useState<Lead[]>([initialLead]);
-  const [issueTypes, setIssueTypes] = useState<JiraIssueType[]>([]);
-  const [selectedIssueType, setSelectedIssueType] = useState("Lead");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const storedTheme = window.localStorage.getItem("theme");
@@ -70,29 +129,10 @@ function App() {
       return;
     }
 
-    async function loadIssueTypes() {
-      try {
-        const types = await getIssueTypes();
-        setIssueTypes(types);
-        setSelectedIssueType(types[0]?.name ?? "Lead");
-      } catch (err) {
-        console.error(err);
-        setError("Konnte Jira Issue-Typen nicht laden.");
-      }
-    }
-
-    loadIssueTypes();
+    loadLeads();
   }, [authenticated]);
 
-  useEffect(() => {
-    if (!authenticated || !selectedIssueType) {
-      return;
-    }
-
-    loadLeads(selectedIssueType);
-  }, [authenticated, selectedIssueType]);
-
-  async function loadLeads(issueType: string, options?: { silent?: boolean }) {
+  async function loadLeads(options?: { silent?: boolean }) {
     const { silent = false } = options || {};
 
     if (!silent) {
@@ -101,7 +141,7 @@ function App() {
     }
 
     try {
-      const remoteLeads = await getLeads(issueType);
+      const remoteLeads = await getLeads();
       if (remoteLeads.length) {
         setLeads(remoteLeads);
       }
@@ -117,23 +157,47 @@ function App() {
     }
   }
 
-  const handleLeadUpdate = async (updatedLead: Lead) => {
+  const handleLeadSave = async (
+    updatedLead: Lead,
+    changedFields: LeadChangeSet,
+  ) => {
+    const persistedLead = {
+      ...updatedLead,
+      isNew: false,
+    };
+
+    console.log("[Lead Save Placeholder]", {
+      leadId: persistedLead.id,
+      mode: updatedLead.isNew ? "create" : "update",
+      changedFields,
+    });
+
     setLeads((currentLeads) =>
       currentLeads.map((lead) =>
-        lead.id === updatedLead.id ? updatedLead : lead,
+        lead.id === persistedLead.id ? persistedLead : lead,
       ),
     );
 
     try {
-      await saveLead(updatedLead);
+      await saveLead(persistedLead);
     } catch (err) {
       console.error(err);
       setError("Konnte Lead nicht speichern.");
     }
   };
 
-  const handleIssueTypeChange = (issueType: string) => {
-    setSelectedIssueType(issueType);
+  const handleLeadCreate = async () => {
+    const nextLead = createEmptyLead(leads);
+
+    setLeads((currentLeads) => [nextLead, ...currentLeads]);
+
+    return nextLead;
+  };
+
+  const handleDiscardLead = (leadId: string) => {
+    setLeads((currentLeads) =>
+      currentLeads.filter((lead) => lead.id !== leadId),
+    );
   };
 
   const handleLogin = () => {
@@ -142,8 +206,11 @@ function App() {
   };
 
   const refreshLeads = () => {
-    loadLeads(selectedIssueType);
+    loadLeads();
   };
+
+  const pageFrameClassName =
+    location.pathname === "/leads" ? "page-frame page-frame-wide" : "page-frame";
 
   if (!authenticated) {
     return <LoginPage onLogin={handleLogin} />;
@@ -154,7 +221,7 @@ function App() {
       <div className="background-orb background-orb-left" />
       <div className="background-orb background-orb-right" />
       <Navbar theme={theme} onToggleTheme={toggleTheme} />
-      <main className="page-frame">
+      <main className={pageFrameClassName}>
         <Routes>
           <Route path="/" element={<Navigate to="/uebersicht" replace />} />
           <Route
@@ -173,10 +240,9 @@ function App() {
             element={
               <LeadsPage
                 leads={leads}
-                issueTypes={issueTypes}
-                selectedIssueType={selectedIssueType}
-                onChangeIssueType={handleIssueTypeChange}
-                onUpdateLead={handleLeadUpdate}
+                onCreateLead={handleLeadCreate}
+                onDiscardLead={handleDiscardLead}
+                onSaveLead={handleLeadSave}
               />
             }
           />
