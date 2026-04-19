@@ -8,3 +8,6 @@ dist/
 /vite-env.d.ts
 .vscode/
 server
+*__pycache__/*
+*.pyc
+.venv/
