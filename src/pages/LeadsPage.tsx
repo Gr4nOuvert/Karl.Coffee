@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import LeadDetail from "../components/LeadDetail";
 import LeadList from "../components/LeadList";
-import { Lead, LeadChangeSet, LeadStatus } from "../types";
+import { Lead, LeadChangeSet, LeadStatus, MachineTemplate } from "../types";
 
 const statusFilters: Array<LeadStatus | "Alle"> = [
   "Alle",
@@ -15,6 +15,7 @@ const statusFilters: Array<LeadStatus | "Alle"> = [
 
 type LeadsPageProps = {
   leads: Lead[];
+  machineTemplates: MachineTemplate[];
   onCreateLead: () => Promise<Lead>;
   onDiscardLead: (leadId: string) => void;
   onSaveLead: (lead: Lead, changedFields: LeadChangeSet) => Promise<void>;
@@ -48,6 +49,7 @@ function filterLeads(
 
 function LeadsPage({
   leads,
+  machineTemplates,
   onCreateLead,
   onDiscardLead,
   onSaveLead,
@@ -220,7 +222,11 @@ function LeadsPage({
           onSelectLead={handleSelectLead}
         />
         {selectedLead ? (
-          <LeadDetail lead={selectedLead} onLeadSave={handleLeadSave} />
+          <LeadDetail
+            lead={selectedLead}
+            machineTemplates={machineTemplates}
+            onLeadSave={handleLeadSave}
+          />
         ) : (
           <article className="panel empty-state">
             <span className="eyebrow">Keine Treffer</span>

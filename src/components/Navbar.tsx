@@ -18,6 +18,7 @@ function Navbar({ theme, onToggleTheme }: NavbarProps) {
       <div className="navbar-actions">
         <NavLink to="/uebersicht">Übersicht</NavLink>
         <NavLink to="/leads">Leads</NavLink>
+        <NavLink to="/einstellungen">Einstellungen</NavLink>
         <button type="button" className="theme-toggle" onClick={onToggleTheme}>
           {theme === "dark" ? "Hellmodus" : "Dunkelmodus"}
         </button>
