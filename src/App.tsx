@@ -11,7 +11,7 @@ import OverviewPage from "./pages/OverviewPage";
 import LeadsPage from "./pages/LeadsPage";
 import LoginPage from "./pages/LoginPage";
 import { getLeads, saveLead } from "./api/jira";
-import { Lead } from "./types";
+import { Lead, LeadChangeSet } from "./types";
 
 const initialLead: Lead = {
   id: "LEAD-001",
@@ -45,13 +45,59 @@ const initialLead: Lead = {
   articles: [
     {
       id: "article-1",
+      type: "Kaffee",
       machine: "karl.coffeeBEAN'1plus",
+      quantity: 1,
       price: 89,
       mode: "Miete",
       extraFeatures: ["Wassertank"],
+      selectedForOffer: true,
     },
   ],
 };
+
+function getNextLeadId(leads: Lead[]) {
+  const highestLeadNumber = leads.reduce((max, lead) => {
+    const match = lead.id.match(/^LEAD-(\d+)$/);
+    if (!match) {
+      return max;
+    }
+
+    return Math.max(max, Number(match[1]));
+  }, 0);
+
+  return `LEAD-${String(highestLeadNumber + 1).padStart(3, "0")}`;
+}
+
+function createEmptyLead(leads: Lead[]): Lead {
+  const today = new Date().toISOString().slice(0, 10);
+
+  return {
+    id: getNextLeadId(leads),
+    status: "Neu",
+    createdAt: today,
+    owner: "Vertrieb",
+    company: "",
+    contactName: "",
+    email: "",
+    phone: "",
+    street: "",
+    postalCode: "",
+    city: "",
+    locationType: "Unternehmen/BÃ¼ro",
+    offerType: "",
+    portions: "10-29",
+    extraFeatures: "",
+    exactMachine: "",
+    notes: "",
+    nextStep: "",
+    estimatedValue: 0,
+    monthlyVolume: "10-29",
+    activity: [],
+    articles: [],
+    isNew: true,
+  };
+}
 
 function App() {
   const [leads, setLeads] = useState<Lead[]>([initialLead]);
@@ -111,19 +157,47 @@ function App() {
     }
   }
 
-  const handleLeadUpdate = async (updatedLead: Lead) => {
+  const handleLeadSave = async (
+    updatedLead: Lead,
+    changedFields: LeadChangeSet,
+  ) => {
+    const persistedLead = {
+      ...updatedLead,
+      isNew: false,
+    };
+
+    console.log("[Lead Save Placeholder]", {
+      leadId: persistedLead.id,
+      mode: updatedLead.isNew ? "create" : "update",
+      changedFields,
+    });
+
     setLeads((currentLeads) =>
       currentLeads.map((lead) =>
-        lead.id === updatedLead.id ? updatedLead : lead,
+        lead.id === persistedLead.id ? persistedLead : lead,
       ),
     );
 
     try {
-      await saveLead(updatedLead);
+      await saveLead(persistedLead);
     } catch (err) {
       console.error(err);
       setError("Konnte Lead nicht speichern.");
     }
+  };
+
+  const handleLeadCreate = async () => {
+    const nextLead = createEmptyLead(leads);
+
+    setLeads((currentLeads) => [nextLead, ...currentLeads]);
+
+    return nextLead;
+  };
+
+  const handleDiscardLead = (leadId: string) => {
+    setLeads((currentLeads) =>
+      currentLeads.filter((lead) => lead.id !== leadId),
+    );
   };
 
   const handleLogin = () => {
@@ -163,7 +237,14 @@ function App() {
           />
           <Route
             path="/leads"
-            element={<LeadsPage leads={leads} onUpdateLead={handleLeadUpdate} />}
+            element={
+              <LeadsPage
+                leads={leads}
+                onCreateLead={handleLeadCreate}
+                onDiscardLead={handleDiscardLead}
+                onSaveLead={handleLeadSave}
+              />
+            }
           />
           <Route path="*" element={<Navigate to="/uebersicht" replace />} />
         </Routes>

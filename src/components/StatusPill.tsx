@@ -29,6 +29,7 @@ function StatusPill({ tone }: StatusPillProps) {
         color,
         fontWeight: 600,
         fontSize: "0.9rem",
+        lineHeight: 1.2,
       }}
     >
       {tone}

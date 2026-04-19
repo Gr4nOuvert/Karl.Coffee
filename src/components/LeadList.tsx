@@ -4,6 +4,7 @@ type LeadListProps = {
   leads: Lead[];
   activeLeadId: string;
   searchQuery: string;
+  onCreateLead: () => void | Promise<void>;
   onSearchQueryChange: (value: string) => void;
   onSelectLead: (leadId: string) => void;
 };
@@ -12,6 +13,7 @@ function LeadList({
   leads,
   activeLeadId,
   searchQuery,
+  onCreateLead,
   onSearchQueryChange,
   onSelectLead,
 }: LeadListProps) {
@@ -21,6 +23,14 @@ function LeadList({
         <div>
           <span className="eyebrow">Leads</span>
         </div>
+        <button
+          type="button"
+          className="lead-list-add-button"
+          onClick={() => void onCreateLead()}
+          aria-label="Neuen Lead anlegen"
+        >
+          +
+        </button>
       </div>
 
       <label className="form-field lead-search-field">
@@ -41,12 +51,14 @@ function LeadList({
               onClick={() => onSelectLead(lead.id)}
             >
               <div className="lead-list-item-top">
-                <strong>{lead.company}</strong>
+                <strong>{lead.company || "Neuer Lead"}</strong>
                 <span className="lead-list-value">
                   {lead.estimatedValue.toLocaleString("de-DE")} EUR
                 </span>
               </div>
-              <span className="lead-list-contact">{lead.contactName}</span>
+              <span className="lead-list-contact">
+                {lead.contactName || "Kontakt hinzufügen"}
+              </span>
             </li>
           ))}
         </ul>
