@@ -16,6 +16,7 @@ import {
   OfferArticleType,
 } from "../types";
 import StatusPill from "./StatusPill";
+import { generateMailFromConfluence } from "../features/mailGeneration/mailService";
 
 type LeadDetailProps = {
   lead: Lead;
@@ -389,6 +390,8 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
   const [expandedArticleId, setExpandedArticleId] = useState<string | null>(null);
   const [draftLead, setDraftLead] = useState(lead);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSendingContract, setIsSendingContract] = useState(false);
+  const [mailError, setMailError] = useState<string | null>(null);
   const articleCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useLayoutEffect(() => {
@@ -624,6 +627,29 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
     }
   };
 
+  const handleSendContract = async () => {
+    setIsSendingContract(true);
+    setMailError(null);
+
+    try {
+      const result = await generateMailFromConfluence(draftLead, {});
+      if (!result.to) {
+        setMailError("Keine E-Mail-Adresse gefunden.");
+        return;
+      }
+
+      const subject = encodeURIComponent(result.subject);
+      const body = encodeURIComponent(result.body);
+      const mailtoUrl = `mailto:${encodeURIComponent(result.to)}?subject=${subject}&body=${body}`;
+      window.location.href = mailtoUrl;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Mail konnte nicht generiert werden.";
+      setMailError(message);
+    } finally {
+      setIsSendingContract(false);
+    }
+  };
+
   return (
     <section className="lead-detail-grid">
       <article className="panel lead-main-panel">
@@ -642,6 +668,17 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
                 >
                   {isSaving ? "Speichert..." : "Speichern"}
                 </button>
+              ) : null}
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => void handleSendContract()}
+                disabled={isSendingContract || hasUnsavedChanges}
+              >
+                {isSendingContract ? "Sendet..." : "Vertrag senden"}
+              </button>
+              {mailError ? (
+                <span className="lead-toolbar-error">{mailError}</span>
               ) : null}
               <div className="lead-status-control">
                 <div className="lead-status-stepper">

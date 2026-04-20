@@ -736,6 +736,12 @@ label {
  flex-wrap: wrap;
 }
 
+.lead-toolbar-error {
+ flex-basis: 100%;
+ color: #f1c7c7;
+ font-size: 0.82rem;
+}
+
 .lead-main-header {
  display: flex;
  align-items: center;
