@@ -108,6 +108,7 @@ type LeadTextField =
   | "offerType"
   | "extraFeatures"
   | "portions"
+  | "owner"
   | "notes";
 
 function areValuesEqual(valueA: unknown, valueB: unknown) {
@@ -765,47 +766,66 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
               </div>
             </div>
 
-            <div className="field-card field-card-compact">
-              <span className="field-label">Angebotsdetails</span>
-              <div className="request-form-grid">
-                <label className="form-field">
-                  <span>Aufstellort</span>
-                  <select
-                    value={draftLead.locationType}
-                    onChange={handleFieldChange("locationType")}
-                  >
-                    <option>Unternehmen/Büro</option>
-                    <option>Kanzlei/Büro</option>
-                    <option>Agentur</option>
-                    <option>Praxis</option>
-                  </select>
-                </label>
-                <label className="form-field">
-                  <span>Angebot</span>
-                  <input
-                    value={draftLead.offerType}
-                    onChange={handleFieldChange("offerType")}
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Zusatzfunktionen</span>
-                  <input
-                    value={draftLead.extraFeatures}
-                    onChange={handleFieldChange("extraFeatures")}
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Portionen</span>
-                  <select
-                    value={draftLead.portions}
-                    onChange={handleFieldChange("portions")}
-                  >
-                    <option>10-29</option>
-                    <option>30-59</option>
-                    <option>60-99</option>
-                    <option>100+</option>
-                  </select>
-                </label>
+            <div className="lead-fields-right">
+              <div className="field-card field-card-compact">
+                <span className="field-label">Angebotsdetails</span>
+                <div className="request-form-grid">
+                  <label className="form-field">
+                    <span>Aufstellort</span>
+                    <select
+                      value={draftLead.locationType}
+                      onChange={handleFieldChange("locationType")}
+                    >
+                      <option>Unternehmen/Büro</option>
+                      <option>Kanzlei/Büro</option>
+                      <option>Agentur</option>
+                      <option>Praxis</option>
+                    </select>
+                  </label>
+                  <label className="form-field">
+                    <span>Angebot</span>
+                    <input
+                      value={draftLead.offerType}
+                      onChange={handleFieldChange("offerType")}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>Zusatzfunktionen</span>
+                    <input
+                      value={draftLead.extraFeatures}
+                      onChange={handleFieldChange("extraFeatures")}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>Portionen</span>
+                    <select
+                      value={draftLead.portions}
+                      onChange={handleFieldChange("portions")}
+                    >
+                      <option>10-29</option>
+                      <option>30-59</option>
+                      <option>60-99</option>
+                      <option>100+</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div className="field-card field-card-compact">
+                <span className="field-label">Bearbeiter</span>
+                <div className="request-form-grid">
+                  <label className="form-field">
+                    <span>Bearbeiter</span>
+                    <select
+                      value={draftLead.owner}
+                      onChange={handleFieldChange("owner")}
+                    >
+                      <option>None</option>
+                      <option>Karl Hübner</option>
+                      <option>Manja Hübner</option>
+                    </select>
+                  </label>
+                </div>
               </div>
             </div>
 

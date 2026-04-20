@@ -850,6 +850,17 @@ label {
  grid-column: 1 / -1;
 }
 
+.field-card-kunden {
+ grid-column: 1;
+}
+
+.lead-fields-right {
+ grid-column: 2;
+ display: grid;
+ gap: 18px;
+ align-content: start;
+}
+
 .lead-notes-field {
  margin-bottom: 0;
  width: 100%;
