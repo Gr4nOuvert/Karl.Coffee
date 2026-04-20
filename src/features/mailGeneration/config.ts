@@ -33,16 +33,19 @@ export const mailGenerationConfig: MailGenerationConfig = {
     },
   ],
   staticPlaceholders: {
-    senderName: "Karl Coffee Vertrieb",
   },
 };
 
 export function buildLeadPlaceholderMap(lead: Lead): Record<string, string> {
+  const fallbackSender = "Karl Coffee Vertrieb";
+  const ownerName = lead.owner?.trim();
+  const senderName = ownerName && ownerName !== "None" ? ownerName : fallbackSender;
+
   return {
     leadId: lead.id,
     company: lead.company,
     contactName: lead.contactName,
-    owner: lead.owner,
+    senderName,
     offerType: lead.offerType,
     portions: lead.portions,
     locationType: lead.locationType,

@@ -16,6 +16,7 @@ import {
   OfferArticleType,
 } from "../types";
 import StatusPill from "./StatusPill";
+import { generateMailFromConfluence } from "../features/mailGeneration/mailService";
 
 type LeadDetailProps = {
   lead: Lead;
@@ -107,6 +108,7 @@ type LeadTextField =
   | "offerType"
   | "extraFeatures"
   | "portions"
+  | "owner"
   | "notes";
 
 function areValuesEqual(valueA: unknown, valueB: unknown) {
@@ -389,6 +391,8 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
   const [expandedArticleId, setExpandedArticleId] = useState<string | null>(null);
   const [draftLead, setDraftLead] = useState(lead);
   const [isSaving, setIsSaving] = useState(false);
+  const [isSendingContract, setIsSendingContract] = useState(false);
+  const [mailError, setMailError] = useState<string | null>(null);
   const articleCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   useLayoutEffect(() => {
@@ -624,6 +628,29 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
     }
   };
 
+  const handleSendContract = async () => {
+    setIsSendingContract(true);
+    setMailError(null);
+
+    try {
+      const result = await generateMailFromConfluence(draftLead, {});
+      if (!result.to) {
+        setMailError("Keine E-Mail-Adresse gefunden.");
+        return;
+      }
+
+      const subject = encodeURIComponent(result.subject);
+      const body = encodeURIComponent(result.body);
+      const mailtoUrl = `mailto:${encodeURIComponent(result.to)}?subject=${subject}&body=${body}`;
+      window.location.href = mailtoUrl;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Mail konnte nicht generiert werden.";
+      setMailError(message);
+    } finally {
+      setIsSendingContract(false);
+    }
+  };
+
   return (
     <section className="lead-detail-grid">
       <article className="panel lead-main-panel">
@@ -642,6 +669,17 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
                 >
                   {isSaving ? "Speichert..." : "Speichern"}
                 </button>
+              ) : null}
+              <button
+                type="button"
+                className="primary-button"
+                onClick={() => void handleSendContract()}
+                disabled={isSendingContract || hasUnsavedChanges}
+              >
+                {isSendingContract ? "Sendet..." : "Vertrag senden"}
+              </button>
+              {mailError ? (
+                <span className="lead-toolbar-error">{mailError}</span>
               ) : null}
               <div className="lead-status-control">
                 <div className="lead-status-stepper">
@@ -728,47 +766,66 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
               </div>
             </div>
 
-            <div className="field-card field-card-compact">
-              <span className="field-label">Angebotsdetails</span>
-              <div className="request-form-grid">
-                <label className="form-field">
-                  <span>Aufstellort</span>
-                  <select
-                    value={draftLead.locationType}
-                    onChange={handleFieldChange("locationType")}
-                  >
-                    <option>Unternehmen/Büro</option>
-                    <option>Kanzlei/Büro</option>
-                    <option>Agentur</option>
-                    <option>Praxis</option>
-                  </select>
-                </label>
-                <label className="form-field">
-                  <span>Angebot</span>
-                  <input
-                    value={draftLead.offerType}
-                    onChange={handleFieldChange("offerType")}
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Zusatzfunktionen</span>
-                  <input
-                    value={draftLead.extraFeatures}
-                    onChange={handleFieldChange("extraFeatures")}
-                  />
-                </label>
-                <label className="form-field">
-                  <span>Portionen</span>
-                  <select
-                    value={draftLead.portions}
-                    onChange={handleFieldChange("portions")}
-                  >
-                    <option>10-29</option>
-                    <option>30-59</option>
-                    <option>60-99</option>
-                    <option>100+</option>
-                  </select>
-                </label>
+            <div className="lead-fields-right">
+              <div className="field-card field-card-compact">
+                <span className="field-label">Angebotsdetails</span>
+                <div className="request-form-grid">
+                  <label className="form-field">
+                    <span>Aufstellort</span>
+                    <select
+                      value={draftLead.locationType}
+                      onChange={handleFieldChange("locationType")}
+                    >
+                      <option>Unternehmen/Büro</option>
+                      <option>Kanzlei/Büro</option>
+                      <option>Agentur</option>
+                      <option>Praxis</option>
+                    </select>
+                  </label>
+                  <label className="form-field">
+                    <span>Angebot</span>
+                    <input
+                      value={draftLead.offerType}
+                      onChange={handleFieldChange("offerType")}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>Zusatzfunktionen</span>
+                    <input
+                      value={draftLead.extraFeatures}
+                      onChange={handleFieldChange("extraFeatures")}
+                    />
+                  </label>
+                  <label className="form-field">
+                    <span>Portionen</span>
+                    <select
+                      value={draftLead.portions}
+                      onChange={handleFieldChange("portions")}
+                    >
+                      <option>10-29</option>
+                      <option>30-59</option>
+                      <option>60-99</option>
+                      <option>100+</option>
+                    </select>
+                  </label>
+                </div>
+              </div>
+
+              <div className="field-card field-card-compact">
+                <span className="field-label">Bearbeiter</span>
+                <div className="request-form-grid">
+                  <label className="form-field">
+                    <span>Bearbeiter</span>
+                    <select
+                      value={draftLead.owner}
+                      onChange={handleFieldChange("owner")}
+                    >
+                      <option>None</option>
+                      <option>Karl Hübner</option>
+                      <option>Manja Hübner</option>
+                    </select>
+                  </label>
+                </div>
               </div>
             </div>
 

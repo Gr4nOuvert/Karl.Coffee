@@ -736,6 +736,12 @@ label {
  flex-wrap: wrap;
 }
 
+.lead-toolbar-error {
+ flex-basis: 100%;
+ color: #f1c7c7;
+ font-size: 0.82rem;
+}
+
 .lead-main-header {
  display: flex;
  align-items: center;
@@ -842,6 +848,17 @@ label {
 
 .field-card-full {
  grid-column: 1 / -1;
+}
+
+.field-card-kunden {
+ grid-column: 1;
+}
+
+.lead-fields-right {
+ grid-column: 2;
+ display: grid;
+ gap: 18px;
+ align-content: start;
 }
 
 .lead-notes-field {
