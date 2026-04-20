@@ -38,6 +38,6 @@ Kopiere `.env.example` nach `.env` und passe Werte an:
 
 ## Nächste Schritte
 
-- Jira-Feld-Mapping für `Lead` anpassen
+
 - Confluence-Textbausteine über die Template-API laden
 - Login/SSO ergänzen
