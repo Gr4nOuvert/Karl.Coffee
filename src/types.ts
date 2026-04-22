@@ -17,6 +17,18 @@ export type OfferArticleMode = "Miete" | "Kauf";
 export type OfferArticleType = "Kaffee" | "Wasser";
 export type GeneratedOfferStatus = "Generiert" | "Mail vorbereitet";
 
+export type MachineTemplate = {
+  machineId: string;
+  displayName: string;
+  type: OfferArticleType;
+  confluencePageId: string;
+  confluencePageTitle: string;
+  content: string;
+  isActive: boolean;
+  updatedAt: string;
+  isNew?: boolean;
+};
+
 export type OfferArticle = {
   id: string;
   type: OfferArticleType;

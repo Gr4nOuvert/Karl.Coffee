@@ -10,8 +10,15 @@ import Navbar from "./components/Navbar";
 import OverviewPage from "./pages/OverviewPage";
 import LeadsPage from "./pages/LeadsPage";
 import LoginPage from "./pages/LoginPage";
+import SettingsPage from "./pages/SettingsPage";
 import { getLeads, saveLead } from "./api/jira";
-import { Lead, LeadChangeSet } from "./types";
+import {
+  Lead,
+  LeadChangeSet,
+  MachineTemplate,
+  OfferArticleType,
+} from "./types";
+import { initialMachineTemplates } from "./data/machineTemplates";
 
 const initialLead: Lead = {
   id: "LEAD-001",
@@ -101,6 +108,8 @@ function createEmptyLead(leads: Lead[]): Lead {
 
 function App() {
   const [leads, setLeads] = useState<Lead[]>([initialLead]);
+  const [machineTemplates, setMachineTemplates] =
+    useState<MachineTemplate[]>(initialMachineTemplates);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
@@ -200,6 +209,62 @@ function App() {
     );
   };
 
+  const handleCreateMachineTemplate = (type: OfferArticleType) => {
+    const machineNumber =
+      machineTemplates.filter((template) => template.type === type).length + 1;
+    return {
+      machineId: `${type.toLowerCase()}-neu-${machineNumber}`,
+      displayName:
+        type === "Kaffee"
+          ? `Neue Kaffeemaschine ${machineNumber}`
+          : `Neue Wassermaschine ${machineNumber}`,
+      type,
+      confluencePageId: "",
+      confluencePageTitle: "",
+      content:
+        type === "Kaffee"
+          ? "{{company}} erhält mit {{machine}} eine passende Kaffee-Lösung für den Standort {{city}}."
+          : "{{company}} erhält mit {{machine}} einen passenden Wasserspender für den Standort {{city}}.",
+      isActive: true,
+      updatedAt: new Date().toISOString(),
+      isNew: true,
+    };
+  };
+
+  const handleSaveMachineTemplate = (
+    machineTemplate: MachineTemplate,
+    previousMachineId?: string,
+  ) => {
+    const persistedMachine = {
+      ...machineTemplate,
+      isNew: false,
+    };
+
+    setMachineTemplates((currentTemplates) => {
+      const existingIndex = currentTemplates.findIndex(
+        (template) =>
+          template.machineId === previousMachineId ||
+          template.machineId === machineTemplate.machineId,
+      );
+
+      if (existingIndex === -1) {
+        return [persistedMachine, ...currentTemplates];
+      }
+
+      return currentTemplates.map((template) =>
+        template.machineId === currentTemplates[existingIndex].machineId
+          ? persistedMachine
+          : template,
+      );
+    });
+  };
+
+  const handleDeleteMachineTemplate = (machineId: string) => {
+    setMachineTemplates((currentTemplates) =>
+      currentTemplates.filter((template) => template.machineId !== machineId),
+    );
+  };
+
   const handleLogin = () => {
     setAuthenticated(true);
     navigate("/uebersicht");
@@ -210,7 +275,9 @@ function App() {
   };
 
   const pageFrameClassName =
-    location.pathname === "/leads" ? "page-frame page-frame-wide" : "page-frame";
+    location.pathname === "/leads" || location.pathname === "/einstellungen"
+      ? "page-frame page-frame-wide"
+      : "page-frame";
 
   if (!authenticated) {
     return <LoginPage onLogin={handleLogin} />;
@@ -240,9 +307,21 @@ function App() {
             element={
               <LeadsPage
                 leads={leads}
+                machineTemplates={machineTemplates}
                 onCreateLead={handleLeadCreate}
                 onDiscardLead={handleDiscardLead}
                 onSaveLead={handleLeadSave}
+              />
+            }
+          />
+          <Route
+            path="/einstellungen"
+            element={
+              <SettingsPage
+                machineTemplates={machineTemplates}
+                onCreateMachineTemplate={handleCreateMachineTemplate}
+                onDeleteMachineTemplate={handleDeleteMachineTemplate}
+                onSaveMachineTemplate={handleSaveMachineTemplate}
               />
             }
           />

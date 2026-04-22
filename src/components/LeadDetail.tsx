@@ -11,6 +11,7 @@ import {
   Lead,
   LeadChangeSet,
   LeadStatus,
+  MachineTemplate,
   OfferArticle,
   OfferArticleMode,
   OfferArticleType,
@@ -20,12 +21,14 @@ import { generateMailFromConfluence } from "../features/mailGeneration/mailServi
 
 type LeadDetailProps = {
   lead: Lead;
+  machineTemplates: MachineTemplate[];
   onLeadSave: (lead: Lead, changedFields: LeadChangeSet) => Promise<void> | void;
 };
 
 type OfferArticleSectionProps = {
   title: OfferArticleType;
   articles: OfferArticle[];
+  machineTemplates: MachineTemplate[];
   expandedArticleId: string | null;
   onAddArticle: (articleType: OfferArticleType) => void;
   onDeleteArticle: (articleId: string) => void;
@@ -50,38 +53,6 @@ const leadStatusOptions: LeadStatus[] = [
   "Angebot versendet",
   "Angebot angenommen",
   "Geschlossen",
-];
-
-const coffeeMachineOptions = [
-  "karl.coffeeBEAN'1plus",
-  "karl.coffeeBEAN'2plus",
-  "karl.coffeeBEAN'3",
-  "karl.coffeeBEAN'4touch",
-  "karl.coffeeBEAN'6big",
-  "karl.coffeeBEAN'+milk",
-  "karl.coffeeBEAN'Vplus",
-  "karl.coffeeBEAN'CXT4",
-  "karl.coffeeBEAN'CXT6",
-  "karl.coffeeBEAN'CXT7",
-  "karl.coffeeBEAN'elba",
-  "karl.coffeeLINE'500",
-  "karl.coffeeLINE2L",
-  "karl.coffeeLINE'5L",
-  "karl.coffeeLINE'2x5L",
-  "karl.coffeeLINE'1.8",
-  "karl.coffeeLINE'2.2",
-  "karl.coffeeSPEED",
-  "karl.coffeeSPEED'4",
-];
-
-const waterMachineOptions = [
-  "karl.coffeeWATER'5.0",
-  "karl.coffeeWATER'5.0touch",
-  "karl.coffeeWATER'speed7.0",
-  "karl.coffeeWATER'speed7.0touch",
-  "karl.coffeeWATERspeed'6.0",
-  "karl.coffeeWATER'4.0",
-  "karl.coffeeWATER'tower4.0",
 ];
 
 const extraFeatureOptions = [
@@ -157,8 +128,30 @@ function getArticleType(article: OfferArticle): OfferArticleType {
   return article.type ?? "Kaffee";
 }
 
-function getMachineOptions(articleType: OfferArticleType) {
-  return articleType === "Wasser" ? waterMachineOptions : coffeeMachineOptions;
+function getMachineOptions(
+  articleType: OfferArticleType,
+  machineTemplates: MachineTemplate[],
+  currentMachine?: string,
+) {
+  const matchingTemplates = machineTemplates.filter(
+    (template) => template.type === articleType && template.isActive,
+  );
+  const options = matchingTemplates.map((template) => ({
+    value: template.machineId,
+    label: template.displayName,
+  }));
+
+  if (
+    currentMachine &&
+    !options.some((option) => option.value === currentMachine)
+  ) {
+    options.unshift({
+      value: currentMachine,
+      label: currentMachine,
+    });
+  }
+
+  return options;
 }
 
 function isArticleSelectedForOffer(article: OfferArticle) {
@@ -195,6 +188,7 @@ function downloadTextFile(filename: string, content: string) {
 function OfferArticleSection({
   title,
   articles,
+  machineTemplates,
   expandedArticleId,
   onAddArticle,
   onDeleteArticle,
@@ -205,7 +199,7 @@ function OfferArticleSection({
   onUpdateArticle,
 }: OfferArticleSectionProps) {
   const isCoffeeSection = title === "Kaffee";
-  const machineOptions = getMachineOptions(title);
+  const sectionMachineOptions = getMachineOptions(title, machineTemplates);
 
   return (
     <section className="offer-section">
@@ -244,11 +238,16 @@ function OfferArticleSection({
                     onUpdateArticle(article.id, "machine", event.target.value)
                   }
                 >
-                  {machineOptions.map((machine) => (
-                    <option key={machine} value={machine}>
-                      {machine}
-                    </option>
-                  ))}
+                  {getMachineOptions(title, machineTemplates, article.machine).map(
+                    (machine) => (
+                      <option key={machine.value} value={machine.value}>
+                        {machine.label}
+                      </option>
+                    ),
+                  )}
+                  {sectionMachineOptions.length === 0 ? (
+                    <option value="">Keine aktive Maschine angelegt</option>
+                  ) : null}
                 </select>
 
                 <div className="offer-article-actions">
@@ -387,7 +386,7 @@ function OfferArticleSection({
   );
 }
 
-function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
+function LeadDetail({ lead, machineTemplates, onLeadSave }: LeadDetailProps) {
   const [expandedArticleId, setExpandedArticleId] = useState<string | null>(null);
   const [draftLead, setDraftLead] = useState(lead);
   const [isSaving, setIsSaving] = useState(false);
@@ -472,10 +471,11 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
   };
 
   const addArticle = (articleType: OfferArticleType) => {
+    const machineOptions = getMachineOptions(articleType, machineTemplates);
     const nextArticle: OfferArticle = {
       id: `article-${Date.now()}`,
       type: articleType,
-      machine: getMachineOptions(articleType)[0],
+      machine: machineOptions[0]?.value ?? "",
       quantity: 1,
       price: 0,
       mode: "Miete",
@@ -852,6 +852,7 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
           <OfferArticleSection
             title="Kaffee"
             articles={coffeeArticles}
+            machineTemplates={machineTemplates}
             expandedArticleId={expandedArticleId}
             onAddArticle={addArticle}
             onDeleteArticle={deleteArticle}
@@ -869,6 +870,7 @@ function LeadDetail({ lead, onLeadSave }: LeadDetailProps) {
           <OfferArticleSection
             title="Wasser"
             articles={waterArticles}
+            machineTemplates={machineTemplates}
             expandedArticleId={expandedArticleId}
             onAddArticle={addArticle}
             onDeleteArticle={deleteArticle}
