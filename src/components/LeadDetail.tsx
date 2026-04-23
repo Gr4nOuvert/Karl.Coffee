@@ -239,6 +239,7 @@ function OfferArticleSection({
           className="primary-button"
           onClick={() => onAddArticle(title)}
           aria-label={`${title}-Angebot hinzufügen`}
+          data-offer-outside-ignore="true"
         >
           +
         </button>
@@ -497,6 +498,13 @@ function LeadDetail({ lead, machineTemplates, onLeadSave }: LeadDetailProps) {
       const target = event.target;
 
       if (!expandedCard || !(target instanceof Node)) {
+        return;
+      }
+
+      if (
+        target instanceof HTMLElement &&
+        target.closest("[data-offer-outside-ignore='true']")
+      ) {
         return;
       }
 
