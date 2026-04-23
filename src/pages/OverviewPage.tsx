@@ -8,6 +8,25 @@ type OverviewPageProps = {
   error: string | null;
 };
 
+function getLatestOfferValue(lead: Lead) {
+  const latestOffer = [...(lead.generatedOffers ?? [])].sort((offerA, offerB) =>
+    offerB.createdAt.localeCompare(offerA.createdAt),
+  )[0];
+
+  if (!latestOffer) {
+    return 0;
+  }
+
+  return latestOffer.items.reduce((sum, item) => {
+    const itemValue =
+      item.mode === "Miete"
+        ? item.quantity * item.price * 12
+        : item.quantity * item.price;
+
+    return sum + itemValue;
+  }, 0);
+}
+
 function OverviewPage({
   leads,
   onRefresh,
@@ -15,14 +34,17 @@ function OverviewPage({
   error,
 }: OverviewPageProps) {
   const totalPipeline = leads.reduce(
-    (sum, lead) => sum + lead.estimatedValue,
+    (sum, lead) =>
+      lead.status === "Angebot versendet"
+        ? sum + getLatestOfferValue(lead)
+        : sum,
     0,
   );
+  const newLeadsCount = leads.filter(
+    (lead) => lead.status === "Neu",
+  ).length;
   const inProgressCount = leads.filter(
     (lead) => lead.status === "In Bearbeitung",
-  ).length;
-  const createdQuotesCount = leads.filter(
-    (lead) => lead.status === "Angebot erzeugt",
   ).length;
   const sentQuotesCount = leads.filter(
     (lead) => lead.status === "Angebot versendet",
@@ -58,19 +80,19 @@ function OverviewPage({
       <section className="stats-grid">
         <DashboardCard
           eyebrow="Neue Leads"
-          value={String(createdQuotesCount)}
+          value={String(newLeadsCount)}
           label=""
           delta=""
         />
         <DashboardCard
-          eyebrow="Bearbeitung"
+          eyebrow="In Bearbeitung"
           value={String(inProgressCount)}
           label=""
           delta=""
         />
         <DashboardCard
-          eyebrow="offene Angebote"
-          value={String(leads.length)}
+          eyebrow="Angebot versendet"
+          value={String(sentQuotesCount)}
           label=""
           delta=""
         />

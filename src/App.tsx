@@ -58,7 +58,7 @@ const initialLead: Lead = {
       price: 89,
       mode: "Miete",
       extraFeatures: ["Wassertank"],
-      selectedForOffer: true,
+      selectedForOffer: false,
     },
   ],
 };
@@ -91,7 +91,7 @@ function createEmptyLead(leads: Lead[]): Lead {
     street: "",
     postalCode: "",
     city: "",
-    locationType: "Unternehmen/BÃ¼ro",
+    locationType: "Unternehmen/Büro",
     offerType: "",
     portions: "10-29",
     extraFeatures: "",
@@ -108,12 +108,15 @@ function createEmptyLead(leads: Lead[]): Lead {
 
 function App() {
   const [leads, setLeads] = useState<Lead[]>([initialLead]);
-  const [machineTemplates, setMachineTemplates] =
-    useState<MachineTemplate[]>(initialMachineTemplates);
+  const [machineTemplates, setMachineTemplates] = useState<MachineTemplate[]>(
+    initialMachineTemplates,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [authenticated, setAuthenticated] = useState(false);
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
+  // TODO: Test-Bypass wieder entfernen und Auth-Status zurück auf `false` setzen,
+  // sobald die Login-Seite wieder aktiv genutzt werden soll.
+  const [authenticated, setAuthenticated] = useState(true);
+  const [theme, setTheme] = useState<"dark" | "light">("light");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -279,6 +282,7 @@ function App() {
       ? "page-frame page-frame-wide"
       : "page-frame";
 
+  // TODO: Diese Login-Schranke nach der Testphase wieder aktivieren.
   if (!authenticated) {
     return <LoginPage onLogin={handleLogin} />;
   }

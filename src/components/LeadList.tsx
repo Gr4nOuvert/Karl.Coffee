@@ -55,9 +55,6 @@ function LeadList({
             >
               <div className="lead-list-item-top">
                 <strong>{lead.company || "Neuer Lead"}</strong>
-                <span className="lead-list-value">
-                  {lead.estimatedValue.toLocaleString("de-DE")} EUR
-                </span>
               </div>
               <span className="lead-list-contact">
                 {lead.contactName || "Kontakt hinzufügen"}
