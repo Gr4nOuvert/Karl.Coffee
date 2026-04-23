@@ -28,23 +28,18 @@ function filterLeads(
 ) {
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase("de-DE");
 
-  return leads.filter((lead) => {
-    const matchesStatus =
-      activeFilter === "Alle" || lead.status === activeFilter;
+  if (normalizedQuery) {
+    return leads.filter((lead) => {
+      const searchableText =
+        `${lead.company} ${lead.contactName}`.toLocaleLowerCase("de-DE");
 
-    if (!matchesStatus) {
-      return false;
-    }
+      return searchableText.includes(normalizedQuery);
+    });
+  }
 
-    if (!normalizedQuery) {
-      return true;
-    }
-
-    const searchableText =
-      `${lead.company} ${lead.contactName}`.toLocaleLowerCase("de-DE");
-
-    return searchableText.includes(normalizedQuery);
-  });
+  return leads.filter(
+    (lead) => activeFilter === "Alle" || lead.status === activeFilter,
+  );
 }
 
 function LeadsPage({
@@ -118,8 +113,9 @@ function LeadsPage({
     const searchableText =
       `${focusedLead.company} ${focusedLead.contactName}`.toLocaleLowerCase("de-DE");
     const staysVisible =
-      (nextFilter === "Alle" || focusedLead.status === nextFilter) &&
-      (!normalizedQuery || searchableText.includes(normalizedQuery));
+      normalizedQuery.length > 0
+        ? searchableText.includes(normalizedQuery)
+        : nextFilter === "Alle" || focusedLead.status === nextFilter;
     const keepsFocus = nextSelectedId === focusedLead.id;
 
     if (staysVisible && keepsFocus) {
@@ -131,6 +127,7 @@ function LeadsPage({
   };
 
   const handleSelectLead = (leadId: string) => {
+    const targetLead = leads.find((lead) => lead.id === leadId);
     const didDiscard = discardFocusedLeadIfNeeded(
       activeFilter,
       searchQuery,
@@ -143,6 +140,9 @@ function LeadsPage({
     }
 
     setSelectedLeadId(leadId);
+    if (searchQuery.trim() && targetLead) {
+      setActiveFilter(targetLead.status);
+    }
   };
 
   const handleFilterChange = (filter: LeadStatus | "Alle") => {
