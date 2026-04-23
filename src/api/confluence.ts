@@ -6,7 +6,7 @@ export async function getConfluenceTemplate(templateId: string): Promise<string>
   await delay();
 
   if (templateId !== "lead-offer-mail-v1") {
-    return "Hallo {{contactName}},\n\n{{introLine}}\n\nViele Grusse,\n{{senderName}}";
+    return "Hallo {{contactName}},\n\n{{introLine}}\n\nViele Grüße,\n{{senderName}}";
   }
 
   return [
@@ -14,18 +14,18 @@ export async function getConfluenceTemplate(templateId: string): Promise<string>
     "",
     "{{introLine}}",
     "",
-    "Hier ist Ihr Angebot zu {{offerType}} fur {{company}}:",
+    "Hier ist Ihr Angebot zu {{offerType}} für {{company}}:",
     "- Standort: {{locationType}} in {{city}}",
     "- Volumen: {{monthlyVolume}} Portionen/Monat",
     "- Zusatzfunktionen: {{extraFeatures}}",
     "- Wunschmaschine: {{exactMachine}}",
-    "- Geschatzter Wert: {{estimatedValue}} EUR",
+    "- Geschätzter Wert: {{estimatedValue}} EUR",
     "",
-    "Nachster Schritt: {{nextStep}}",
+    "Nächster Schritt: {{nextStep}}",
     "",
     "{{cta}}",
     "",
-    "Viele Grusse,",
+    "Viele Grüße,",
     "{{senderName}}",
   ].join("\n");
 }

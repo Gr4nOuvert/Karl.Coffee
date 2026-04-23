@@ -18,22 +18,21 @@ export type MailGenerationConfig = {
 export const mailGenerationConfig: MailGenerationConfig = {
   confluenceTemplateId: "lead-offer-mail-v1",
   customEmailField: "E-Mail",
-  subjectTemplate: "Angebot fur {{company}}",
+  subjectTemplate: "Angebot für {{company}}",
   missingValueFallback: "N/A",
   uiPlaceholders: [
     {
       key: "introLine",
       label: "Einleitung",
-      placeholder: "Vielen Dank fur Ihre Anfrage.",
+      placeholder: "Vielen Dank für Ihre Anfrage.",
     },
     {
       key: "cta",
       label: "Call-to-Action",
-      placeholder: "Gern stimmen wir die Details im nachsten Schritt ab.",
+      placeholder: "Gern stimmen wir die Details im nächsten Schritt ab.",
     },
   ],
-  staticPlaceholders: {
-  },
+  staticPlaceholders: {},
 };
 
 export function buildLeadPlaceholderMap(lead: Lead): Record<string, string> {

@@ -8,6 +8,25 @@ type OverviewPageProps = {
   error: string | null;
 };
 
+function getLatestOfferValue(lead: Lead) {
+  const latestOffer = [...(lead.generatedOffers ?? [])].sort((offerA, offerB) =>
+    offerB.createdAt.localeCompare(offerA.createdAt),
+  )[0];
+
+  if (!latestOffer) {
+    return 0;
+  }
+
+  return latestOffer.items.reduce((sum, item) => {
+    const itemValue =
+      item.mode === "Miete"
+        ? item.quantity * item.price * 12
+        : item.quantity * item.price;
+
+    return sum + itemValue;
+  }, 0);
+}
+
 function OverviewPage({
   leads,
   onRefresh,
@@ -15,14 +34,17 @@ function OverviewPage({
   error,
 }: OverviewPageProps) {
   const totalPipeline = leads.reduce(
-    (sum, lead) => sum + lead.estimatedValue,
+    (sum, lead) =>
+      lead.status === "Angebot versendet"
+        ? sum + getLatestOfferValue(lead)
+        : sum,
     0,
   );
+  const newLeadsCount = leads.filter(
+    (lead) => lead.status === "Neu",
+  ).length;
   const inProgressCount = leads.filter(
     (lead) => lead.status === "In Bearbeitung",
-  ).length;
-  const createdQuotesCount = leads.filter(
-    (lead) => lead.status === "Angebot erzeugt",
   ).length;
   const sentQuotesCount = leads.filter(
     (lead) => lead.status === "Angebot versendet",
@@ -35,12 +57,12 @@ function OverviewPage({
       <section className="hero panel">
         <div className="hero-copy">
           <span className="eyebrow">Übersicht</span>
-          <h1>Leads & Angebote in einer zentralen Ansicht</h1>
-          <p>
+          {/* <h1>Leads & Angebote in einer zentralen Ansicht</h1> */}
+          {/* <p>
             Hier sehen deine Vertriebsmitarbeiter den aktuellen Stand aller
             Lead, den Status von Angeboten und die wichtigsten nächsten
             Schritte.
-          </p>
+          </p> */}
           {error ? <p className="panel-copy">Fehler: {error}</p> : null}
         </div>
 
@@ -57,22 +79,22 @@ function OverviewPage({
 
       <section className="stats-grid">
         <DashboardCard
-          eyebrow="Offen"
-          value={String(leads.length)}
-          label="aktive Leads"
-          delta="immer aktuell"
+          eyebrow="Neue Leads"
+          value={String(newLeadsCount)}
+          label=""
+          delta=""
         />
         <DashboardCard
-          eyebrow="Bearbeitung"
+          eyebrow="In Bearbeitung"
           value={String(inProgressCount)}
-          label="aktive Leads"
-          delta="direkt weiterarbeiten"
+          label=""
+          delta=""
         />
         <DashboardCard
-          eyebrow="Angebote"
-          value={String(createdQuotesCount)}
-          label="erzeugt"
-          delta="bereit zum Versand"
+          eyebrow="Angebot versendet"
+          value={String(sentQuotesCount)}
+          label=""
+          delta=""
         />
       </section>
 
@@ -80,8 +102,8 @@ function OverviewPage({
         <article className="panel">
           <div className="section-heading">
             <div>
-              <span className="eyebrow">Offene Leads</span>
-              <h2>Direkt weiterarbeiten</h2>
+              <span className="eyebrow">Deine Kaffee News</span>
+              <h2>Agent Integration</h2>
             </div>
             <button
               type="button"
@@ -93,12 +115,12 @@ function OverviewPage({
             </button>
           </div>
 
-          <p className="panel-copy">
+          {/* <p className="panel-copy">
             Die wichtigsten offenen Leads sind hier kompakt und übersichtlich
             angeordnet.
-          </p>
+          </p> */}
 
-          <div className="lead-grid">
+          {/* <div className="lead-grid">
             {displayLeads.map((lead) => (
               <article key={lead.id} className="lead-card">
                 <div className="lead-card-head">
@@ -114,10 +136,10 @@ function OverviewPage({
                 </div>
               </article>
             ))}
-          </div>
+          </div> */}
         </article>
 
-        <article className="panel">
+        {/* <article className="panel">
           <div className="section-heading">
             <div>
               <span className="eyebrow">Fokus</span>
@@ -160,7 +182,7 @@ function OverviewPage({
             Konzentriere dich auf die wichtigsten Leads, damit die Pipeline
             schnell weiterläuft.
           </div>
-        </article>
+        </article> */}
       </section>
     </div>
   );

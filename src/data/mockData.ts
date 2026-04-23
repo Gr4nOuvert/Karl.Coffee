@@ -23,8 +23,18 @@ export const mockLeads: Lead[] = [
     estimatedValue: 3200,
     monthlyVolume: "30-59",
     activity: [
-      { id: "activity-1", label: "Lead aus E-Mail importiert", date: "10.04.2026", type: "mail" },
-      { id: "activity-2", label: "Anruf terminiert", date: "11.04.2026", type: "call" },
+      {
+        id: "activity-1",
+        label: "Lead aus E-Mail importiert",
+        date: "10.04.2026",
+        type: "mail",
+      },
+      {
+        id: "activity-2",
+        label: "Anruf terminiert",
+        date: "11.04.2026",
+        type: "call",
+      },
     ],
   },
   {
@@ -49,8 +59,18 @@ export const mockLeads: Lead[] = [
     estimatedValue: 5400,
     monthlyVolume: "60-99",
     activity: [
-      { id: "activity-3", label: "Lead manuell angelegt", date: "08.04.2026", type: "note" },
-      { id: "activity-4", label: "Angebotsanfrage diskutiert", date: "09.04.2026", type: "call" },
+      {
+        id: "activity-3",
+        label: "Lead manuell angelegt",
+        date: "08.04.2026",
+        type: "note",
+      },
+      {
+        id: "activity-4",
+        label: "Angebotsanfrage diskutiert",
+        date: "09.04.2026",
+        type: "call",
+      },
     ],
   },
   {
@@ -75,7 +95,12 @@ export const mockLeads: Lead[] = [
     estimatedValue: 2800,
     monthlyVolume: "30-59",
     activity: [
-      { id: "activity-5", label: "Website-Formular importiert", date: "07.04.2026", type: "mail" },
+      {
+        id: "activity-5",
+        label: "Website-Formular importiert",
+        date: "07.04.2026",
+        type: "mail",
+      },
     ],
   },
   {
@@ -100,7 +125,12 @@ export const mockLeads: Lead[] = [
     estimatedValue: 6100,
     monthlyVolume: "60-99",
     activity: [
-      { id: "activity-6", label: "Maschinenberatung durchgeführt", date: "06.04.2026", type: "call" },
+      {
+        id: "activity-6",
+        label: "Maschinenberatung durchgeführt",
+        date: "06.04.2026",
+        type: "call",
+      },
     ],
   },
   {
@@ -125,7 +155,12 @@ export const mockLeads: Lead[] = [
     estimatedValue: 4600,
     monthlyVolume: "10-29",
     activity: [
-      { id: "activity-7", label: "PDF im Backend erstellt", date: "05.04.2026", type: "note" },
+      {
+        id: "activity-7",
+        label: "PDF im Backend erstellt",
+        date: "05.04.2026",
+        type: "note",
+      },
     ],
   },
   {
@@ -149,8 +184,40 @@ export const mockLeads: Lead[] = [
     nextStep: "Nachfassen zum Entscheidungszeitraum.",
     estimatedValue: 8900,
     monthlyVolume: "100+",
+    generatedOffers: [
+      {
+        id: "ANG-LEAD-006-01",
+        createdAt: "2026-04-04T10:30:00.000Z",
+        status: "Mail vorbereitet",
+        items: [
+          {
+            articleId: "lead-006-article-1",
+            type: "Kaffee",
+            machine: "karl.coffeeBEAN'1plus",
+            quantity: 2,
+            price: 159,
+            mode: "Miete",
+            extraFeatures: ["Doppelbohnenbehälter"],
+          },
+          {
+            articleId: "lead-006-article-2",
+            type: "Wasser",
+            machine: "BRITA Top Pro",
+            quantity: 1,
+            price: 89,
+            mode: "Miete",
+            extraFeatures: [],
+          },
+        ],
+      },
+    ],
     activity: [
-      { id: "activity-8", label: "Angebot per E-Mail versendet", date: "04.04.2026", type: "mail" },
+      {
+        id: "activity-8",
+        label: "Angebot per E-Mail versendet",
+        date: "04.04.2026",
+        type: "mail",
+      },
     ],
   },
   {
@@ -174,8 +241,31 @@ export const mockLeads: Lead[] = [
     nextStep: "Ende der Woche nachtelefonieren.",
     estimatedValue: 5200,
     monthlyVolume: "30-59",
+    generatedOffers: [
+      {
+        id: "ANG-LEAD-007-01",
+        createdAt: "2026-04-03T14:15:00.000Z",
+        status: "Mail vorbereitet",
+        items: [
+          {
+            articleId: "lead-007-article-1",
+            type: "Kaffee",
+            machine: "karl.coffeeBEAN'2",
+            quantity: 1,
+            price: 129,
+            mode: "Miete",
+            extraFeatures: ["Milchschäumer"],
+          },
+        ],
+      },
+    ],
     activity: [
-      { id: "activity-9", label: "Feedback-Frist abgestimmt", date: "03.04.2026", type: "call" },
+      {
+        id: "activity-9",
+        label: "Feedback-Frist abgestimmt",
+        date: "03.04.2026",
+        type: "call",
+      },
     ],
   },
   {
@@ -200,7 +290,12 @@ export const mockLeads: Lead[] = [
     estimatedValue: 2400,
     monthlyVolume: "10-29",
     activity: [
-      { id: "activity-10", label: "Visitenkarte erfasst", date: "02.04.2026", type: "note" },
+      {
+        id: "activity-10",
+        label: "Visitenkarte erfasst",
+        date: "02.04.2026",
+        type: "note",
+      },
     ],
   },
   {
@@ -225,7 +320,12 @@ export const mockLeads: Lead[] = [
     estimatedValue: 6700,
     monthlyVolume: "60-99",
     activity: [
-      { id: "activity-11", label: "Follow-up versendet", date: "01.04.2026", type: "mail" },
+      {
+        id: "activity-11",
+        label: "Follow-up versendet",
+        date: "01.04.2026",
+        type: "mail",
+      },
     ],
   },
   {
@@ -250,7 +350,12 @@ export const mockLeads: Lead[] = [
     estimatedValue: 9300,
     monthlyVolume: "100+",
     activity: [
-      { id: "activity-12", label: "Anforderungen aufgenommen", date: "31.03.2026", type: "call" },
+      {
+        id: "activity-12",
+        label: "Anforderungen aufgenommen",
+        date: "31.03.2026",
+        type: "call",
+      },
     ],
   },
   {
@@ -275,7 +380,12 @@ export const mockLeads: Lead[] = [
     estimatedValue: 4100,
     monthlyVolume: "30-59",
     activity: [
-      { id: "activity-13", label: "Annahme bestätigt", date: "30.03.2026", type: "mail" },
+      {
+        id: "activity-13",
+        label: "Annahme bestätigt",
+        date: "30.03.2026",
+        type: "mail",
+      },
     ],
   },
   {
@@ -300,7 +410,12 @@ export const mockLeads: Lead[] = [
     estimatedValue: 3500,
     monthlyVolume: "10-29",
     activity: [
-      { id: "activity-14", label: "Lead geschlossen", date: "29.03.2026", type: "note" },
+      {
+        id: "activity-14",
+        label: "Lead geschlossen",
+        date: "29.03.2026",
+        type: "note",
+      },
     ],
   },
   {
@@ -325,7 +440,12 @@ export const mockLeads: Lead[] = [
     estimatedValue: 5800,
     monthlyVolume: "30-59",
     activity: [
-      { id: "activity-15", label: "Lead aus Chat übernommen", date: "28.03.2026", type: "note" },
+      {
+        id: "activity-15",
+        label: "Lead aus Chat übernommen",
+        date: "28.03.2026",
+        type: "note",
+      },
     ],
   },
   {
@@ -349,8 +469,40 @@ export const mockLeads: Lead[] = [
     nextStep: "Nachfassen nach Budgetrunde.",
     estimatedValue: 4700,
     monthlyVolume: "30-59",
+    generatedOffers: [
+      {
+        id: "ANG-LEAD-014-01",
+        createdAt: "2026-03-27T09:45:00.000Z",
+        status: "Mail vorbereitet",
+        items: [
+          {
+            articleId: "lead-014-article-1",
+            type: "Kaffee",
+            machine: "Nivona NIVO 8107",
+            quantity: 1,
+            price: 119,
+            mode: "Miete",
+            extraFeatures: ["Festwasser"],
+          },
+          {
+            articleId: "lead-014-article-2",
+            type: "Wasser",
+            machine: "BRITA VIVREAU Extra",
+            quantity: 1,
+            price: 69,
+            mode: "Miete",
+            extraFeatures: [],
+          },
+        ],
+      },
+    ],
     activity: [
-      { id: "activity-16", label: "Angebot an Geschäftsführung geschickt", date: "27.03.2026", type: "mail" },
+      {
+        id: "activity-16",
+        label: "Angebot an Geschäftsführung geschickt",
+        date: "27.03.2026",
+        type: "mail",
+      },
     ],
   },
 ];

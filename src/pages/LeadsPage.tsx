@@ -57,6 +57,7 @@ function LeadsPage({
   const [selectedLeadId, setSelectedLeadId] = useState(leads[0]?.id ?? "");
   const [activeFilter, setActiveFilter] = useState<LeadStatus | "Alle">("Alle");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCreatingLead, setIsCreatingLead] = useState(false);
   const onDiscardLeadRef = useRef(onDiscardLead);
   const pendingDiscardLeadIdRef = useRef<string | null>(null);
 
@@ -167,15 +168,32 @@ function LeadsPage({
   };
 
   const handleCreateLead = async () => {
-    if (focusedLead?.isNew) {
-      onDiscardLead(focusedLead.id);
+    if (isCreatingLead) {
+      return;
     }
 
-    const newLead = await onCreateLead();
-    setSearchQuery("");
-    setActiveFilter("Neu");
-    pendingDiscardLeadIdRef.current = newLead.id;
-    setSelectedLeadId(newLead.id);
+    if (focusedLead?.isNew) {
+      setSelectedLeadId(focusedLead.id);
+      setActiveFilter("Neu");
+      setSearchQuery("");
+      return;
+    }
+
+    setIsCreatingLead(true);
+
+    try {
+      if (focusedLead?.isNew) {
+        onDiscardLead(focusedLead.id);
+      }
+
+      const newLead = await onCreateLead();
+      setSearchQuery("");
+      setActiveFilter("Neu");
+      pendingDiscardLeadIdRef.current = newLead.id;
+      setSelectedLeadId(newLead.id);
+    } finally {
+      setIsCreatingLead(false);
+    }
   };
 
   return (
@@ -217,6 +235,7 @@ function LeadsPage({
           leads={filteredLeads}
           activeLeadId={selectedLead?.id ?? ""}
           searchQuery={searchQuery}
+          isCreatingLead={isCreatingLead}
           onCreateLead={handleCreateLead}
           onSearchQueryChange={handleSearchChange}
           onSelectLead={handleSelectLead}
