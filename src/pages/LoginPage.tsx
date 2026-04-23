@@ -21,7 +21,7 @@ function LoginPage({ onLogin }: LoginPageProps) {
     <div className="login-shell">
       <article className="panel login-card">
         <div className="login-brand">
-          <img src="/logo.png" alt="Karl Coffee Logo" className="login-logo" />
+          <img src={`${import.meta.env.BASE_URL}logo.png`} alt="Karl Coffee Logo" className="navbar-logo" />
           <span className="eyebrow">Karl Coffee</span>
           <h1>Interne Vertriebsoberfläche</h1>
           <p>Bitte melde dich an, um Leads und Angebote zu verwalten.</p>
