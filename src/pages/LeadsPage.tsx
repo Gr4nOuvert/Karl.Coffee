@@ -52,13 +52,15 @@ function LeadsPage({
   const [selectedLeadId, setSelectedLeadId] = useState(leads[0]?.id ?? "");
   const [activeFilter, setActiveFilter] = useState<LeadStatus | "Alle">("Alle");
   const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchActive, setIsSearchActive] = useState(false);
   const [isCreatingLead, setIsCreatingLead] = useState(false);
   const onDiscardLeadRef = useRef(onDiscardLead);
   const pendingDiscardLeadIdRef = useRef<string | null>(null);
+  const effectiveSearchQuery = isSearchActive ? searchQuery : "";
 
   const filteredLeads = useMemo(
-    () => filterLeads(leads, activeFilter, searchQuery),
-    [activeFilter, leads, searchQuery],
+    () => filterLeads(leads, activeFilter, effectiveSearchQuery),
+    [activeFilter, effectiveSearchQuery, leads],
   );
   const focusedLead =
     leads.find((lead) => lead.id === selectedLeadId) ?? leads[0];
@@ -128,20 +130,24 @@ function LeadsPage({
 
   const handleSelectLead = (leadId: string) => {
     const targetLead = leads.find((lead) => lead.id === leadId);
+    const hasActiveSearch = Boolean(effectiveSearchQuery.trim());
     const didDiscard = discardFocusedLeadIfNeeded(
       activeFilter,
-      searchQuery,
+      effectiveSearchQuery,
       leadId,
     );
 
     if (didDiscard && leadId === focusedLead?.id) {
-      setSelectedLeadId(getNextVisibleLeadId(activeFilter, searchQuery, leads));
+      setSelectedLeadId(
+        getNextVisibleLeadId(activeFilter, effectiveSearchQuery, leads),
+      );
       return;
     }
 
     setSelectedLeadId(leadId);
-    if (searchQuery.trim() && targetLead) {
+    if (hasActiveSearch && targetLead) {
       setActiveFilter(targetLead.status);
+      setIsSearchActive(false);
     }
   };
 
@@ -149,9 +155,10 @@ function LeadsPage({
     const remainingLeads = focusedLead?.isNew
       ? leads.filter((lead) => lead.id !== focusedLead.id)
       : leads;
-    const nextLeadId = getNextVisibleLeadId(filter, searchQuery, remainingLeads);
+    const nextLeadId = getNextVisibleLeadId(filter, "", remainingLeads);
 
-    discardFocusedLeadIfNeeded(filter, searchQuery, nextLeadId);
+    discardFocusedLeadIfNeeded(filter, "", nextLeadId);
+    setIsSearchActive(false);
     setActiveFilter(filter);
     setSelectedLeadId(nextLeadId);
   };
@@ -161,9 +168,31 @@ function LeadsPage({
       ? leads.filter((lead) => lead.id !== focusedLead.id)
       : leads;
     const nextLeadId = getNextVisibleLeadId(activeFilter, value, remainingLeads);
+    const nextLead = leads.find((lead) => lead.id === nextLeadId);
 
     discardFocusedLeadIfNeeded(activeFilter, value, nextLeadId);
     setSearchQuery(value);
+    setIsSearchActive(Boolean(value.trim()));
+    setSelectedLeadId(nextLeadId);
+
+    if (value.trim() && nextLead) {
+      setActiveFilter(nextLead.status);
+    }
+  };
+
+  const handleSearchSubmit = () => {
+    const remainingLeads = focusedLead?.isNew
+      ? leads.filter((lead) => lead.id !== focusedLead.id)
+      : leads;
+    const normalizedQuery = searchQuery.trim();
+    const nextLeadId = getNextVisibleLeadId(
+      activeFilter,
+      normalizedQuery,
+      remainingLeads,
+    );
+
+    discardFocusedLeadIfNeeded(activeFilter, normalizedQuery, nextLeadId);
+    setIsSearchActive(Boolean(normalizedQuery));
     setSelectedLeadId(nextLeadId);
   };
 
@@ -188,6 +217,7 @@ function LeadsPage({
 
       const newLead = await onCreateLead();
       setSearchQuery("");
+      setIsSearchActive(false);
       setActiveFilter("Neu");
       pendingDiscardLeadIdRef.current = newLead.id;
       setSelectedLeadId(newLead.id);
@@ -238,6 +268,7 @@ function LeadsPage({
           isCreatingLead={isCreatingLead}
           onCreateLead={handleCreateLead}
           onSearchQueryChange={handleSearchChange}
+          onSearchSubmit={handleSearchSubmit}
           onSelectLead={handleSelectLead}
         />
         {selectedLead ? (

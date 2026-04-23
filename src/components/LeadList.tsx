@@ -7,6 +7,7 @@ type LeadListProps = {
   isCreatingLead?: boolean;
   onCreateLead: () => void | Promise<void>;
   onSearchQueryChange: (value: string) => void;
+  onSearchSubmit: () => void;
   onSelectLead: (leadId: string) => void;
 };
 
@@ -17,6 +18,7 @@ function LeadList({
   isCreatingLead = false,
   onCreateLead,
   onSearchQueryChange,
+  onSearchSubmit,
   onSelectLead,
 }: LeadListProps) {
   return (
@@ -36,14 +38,39 @@ function LeadList({
         </button>
       </div>
 
-      <label className="form-field lead-search-field">
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={(event) => onSearchQueryChange(event.target.value)}
-          placeholder="Firma oder Kontaktperson suchen"
-        />
-      </label>
+      <form
+        className="lead-search-form"
+        onSubmit={(event) => {
+          event.preventDefault();
+          onSearchSubmit();
+        }}
+      >
+        <label className="form-field lead-search-field">
+          <input
+            type="search"
+            value={searchQuery}
+            onChange={(event) => onSearchQueryChange(event.target.value)}
+            placeholder="Firma oder Kontaktperson suchen"
+          />
+        </label>
+        <button
+          type="submit"
+          className="lead-search-button"
+          aria-label="Suche ausführen"
+          title="Suche"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="m21 21-4.35-4.35m1.85-5.15a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </form>
 
       <div className="lead-list-scroll">
         <ul className="lead-list">

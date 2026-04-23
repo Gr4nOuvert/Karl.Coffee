@@ -147,6 +147,18 @@
   background: rgba(221, 179, 109, 0.14);
 }
 
+:root[data-theme='light'] .lead-search-button {
+  color: #5d4c39;
+  border-color: rgba(117, 93, 60, 0.16);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+:root[data-theme='light'] .lead-search-button:hover {
+  color: #2f2620;
+  border-color: rgba(117, 93, 60, 0.24);
+  background: rgba(221, 179, 109, 0.2);
+}
+
 :root[data-theme='light'] .lead-detail-tabs {
   border-color: rgba(117, 93, 60, 0.14);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(243, 233, 219, 0.9));
@@ -918,7 +930,47 @@ label {
 }
 
 .lead-search-field {
+ margin-bottom: 0;
+ flex: 1;
+}
+
+.lead-search-form {
+ display: flex;
+ align-items: stretch;
+ gap: 10px;
  margin-bottom: 20px;
+}
+
+.lead-search-form .lead-search-field input {
+ height: 100%;
+}
+
+.lead-search-button {
+ width: 46px;
+ min-width: 46px;
+ border: 1px solid rgba(221, 179, 109, 0.2);
+ border-radius: 16px;
+ background: rgba(255, 255, 255, 0.05);
+ color: inherit;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ padding: 0;
+ transition:
+  background 160ms ease,
+  border-color 160ms ease,
+  transform 160ms ease;
+}
+
+.lead-search-button svg {
+ width: 18px;
+ height: 18px;
+}
+
+.lead-search-button:hover {
+ background: rgba(221, 179, 109, 0.14);
+ border-color: rgba(221, 179, 109, 0.32);
+ transform: translateY(-1px);
 }
 
 .lead-list-add-button {
@@ -1799,6 +1851,10 @@ label {
 
  .lead-detail-tabs {
   width: 100%;
+ }
+
+ .lead-search-form {
+  grid-template-columns: minmax(0, 1fr) auto;
  }
 
  .offer-history-item {
