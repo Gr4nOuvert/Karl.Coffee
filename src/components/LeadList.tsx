@@ -4,6 +4,7 @@ type LeadListProps = {
   leads: Lead[];
   activeLeadId: string;
   searchQuery: string;
+  isCreatingLead?: boolean;
   onCreateLead: () => void | Promise<void>;
   onSearchQueryChange: (value: string) => void;
   onSelectLead: (leadId: string) => void;
@@ -13,6 +14,7 @@ function LeadList({
   leads,
   activeLeadId,
   searchQuery,
+  isCreatingLead = false,
   onCreateLead,
   onSearchQueryChange,
   onSelectLead,
@@ -28,6 +30,7 @@ function LeadList({
           className="lead-list-add-button"
           onClick={() => void onCreateLead()}
           aria-label="Neuen Lead anlegen"
+          disabled={isCreatingLead}
         >
           +
         </button>
