@@ -34,6 +34,8 @@ jobs:
           else
             npm run build -- --base "/${REPO_NAME}/"
           fi
+          # SPA fallback for GitHub Pages
+          cp dist/index.html dist/404.html
       - name: Validate build output
         run: |
           test -d dist || { echo "dist directory missing after build"; exit 1; }
